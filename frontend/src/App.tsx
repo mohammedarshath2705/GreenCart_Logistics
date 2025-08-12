@@ -1,37 +1,71 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Login from "./pages/Login";
+import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import type { JSX } from "react";
-
-interface PrivateRouteProps {
-  children: JSX.Element;
-}
-
-// 💡 Hardcode token ONCE for testing
-localStorage.setItem(
-  "token",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc1NDk3OTYwNiwiZXhwIjoxNzU1MDY2MDA2fQ.PBAuLZJBUDWlkO4-GKn5Hj0Ww1jjuF7Ys9UaWEl1hXg"
-);
-
-const PrivateRoute = ({ children }: PrivateRouteProps) => {
-  const token = localStorage.getItem("token"); // ✅ read, not set
-  return token ? children : <Navigate to="/login" replace />;
-};
+import Simulation from "./pages/Simulation";
+import Drivers from "./pages/Drivers";
+import RoutesPage from "./pages/Routes";
+import OrdersPage from "./pages/Orders";
+import PrivateRoute from "./pages/PrivateRoute";
+import Layout from "./components/layout";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path="/auth" element={<Auth />} />
+
         <Route
           path="/dashboard"
           element={
             <PrivateRoute>
-              <Dashboard />
+              <Layout>
+                <Dashboard />
+              </Layout>
             </PrivateRoute>
           }
         />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route
+          path="/simulation"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Simulation />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/drivers"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <Drivers />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/routes"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <RoutesPage />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <PrivateRoute>
+              <Layout>
+                <OrdersPage />
+              </Layout>
+            </PrivateRoute>
+          }
+        />
+
+        <Route path="/" element={<Navigate to="/auth" replace />} />
       </Routes>
     </BrowserRouter>
   );

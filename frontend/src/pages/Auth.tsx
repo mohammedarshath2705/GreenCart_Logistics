@@ -1,31 +1,40 @@
 import { useState, useEffect } from "react";
-import { login, getToken } from "../services/auth";
-import { useNavigate, Link } from "react-router-dom";
+import { login, registerUser, getToken } from "../services/auth";
+import { useNavigate } from "react-router-dom";
 
-export default function Login() {
+export default function Auth() {
+  const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
+  // Redirect if already logged in
   useEffect(() => {
     if (getToken()) {
       navigate("/dashboard", { replace: true });
     }
   }, [navigate]);
 
-  const handleLogin = async () => {
+  const handleSubmit = async () => {
     try {
-      await login(username, password);
+      if (isLogin) {
+        await login(username, password);
+      } else {
+        await registerUser(username, password);
+        await login(username, password); // auto-login after register
+      }
       navigate("/dashboard", { replace: true });
     } catch {
-      alert("Invalid credentials");
+      alert(isLogin ? "Invalid credentials" : "Registration failed");
     }
   };
 
   return (
     <div className="h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-6 rounded shadow w-80 space-y-4">
-        <h1 className="text-xl font-bold">Manager Login</h1>
+        <h1 className="text-xl font-bold text-center">
+          {isLogin ? "Manager Login" : "Register Account"}
+        </h1>
         <input
           type="text"
           placeholder="Username"
@@ -41,17 +50,19 @@ export default function Login() {
           className="border p-2 w-full rounded"
         />
         <button
-          onClick={handleLogin}
+          onClick={handleSubmit}
           className="bg-blue-500 text-white w-full py-2 rounded"
         >
-          Login
+          {isLogin ? "Login" : "Register"}
         </button>
 
-        <p className="text-sm text-center">
-          Don’t have an account?{" "}
-          <Link to="/register" className="text-blue-500 hover:underline">
-            Register
-          </Link>
+        <p
+          className="text-sm text-center text-blue-500 cursor-pointer hover:underline"
+          onClick={() => setIsLogin(!isLogin)}
+        >
+          {isLogin
+            ? "Don't have an account? Register"
+            : "Already have an account? Login"}
         </p>
       </div>
     </div>

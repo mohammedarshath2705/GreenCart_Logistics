@@ -1,13 +1,15 @@
 import axios from "axios";
+import { getToken } from "./auth";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_URL + "/api",
 });
 
 api.interceptors.request.use((config) => {
-  const token =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc1NDk3OTYwNiwiZXhwIjoxNzU1MDY2MDA2fQ.PBAuLZJBUDWlkO4-GKn5Hj0Ww1jjuF7Ys9UaWEl1hXg";
-  config.headers.Authorization = `Bearer ${token}`;
+  const token = getToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 

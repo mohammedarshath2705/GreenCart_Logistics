@@ -1,19 +1,32 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
-import Navbar from "../components/Navbar";
-import type { Order } from "../types";
 
-export default function Orders() {
+interface Order {
+  id: number;
+  orderId: string;
+  valueRs: number;
+  deliveryTimeMinutes: number;
+  deliveredAt: string;
+  routeId?: number;
+  driverId?: number;
+}
+
+export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [orderId, setOrderId] = useState("");
-  const [valueRs, setValueRs] = useState(0);
-  const [deliveryTime, setDeliveryTime] = useState(30);
-  const [routeId, setRouteId] = useState<number | null>(null);
-  const [driverId, setDriverId] = useState<number | null>(null);
   const [routes, setRoutes] = useState<any[]>([]);
   const [drivers, setDrivers] = useState<any[]>([]);
 
-  const fetchData = async () => {
+  const [form, setForm] = useState({
+    orderId: "",
+    valueRs: 0,
+    deliveryTimeMinutes: 30,
+    deliveredAt: "",
+    routeId: "",
+    driverId: "",
+  });
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const fetchAll = async () => {
     const [o, r, d] = await Promise.all([
       api.get("/orders"),
       api.get("/routes"),
@@ -25,126 +38,194 @@ export default function Orders() {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchAll();
   }, []);
 
-  const createOrder = async () => {
-    await api.post("/orders", {
-      orderId,
-      valueRs,
-      deliveryTimeMinutes: deliveryTime,
-      deliveredAt: new Date().toISOString(),
-      routeId: routeId || null,
-      driverId: driverId || null,
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const payload = {
+      ...form,
+      routeId: form.routeId ? Number(form.routeId) : null,
+      driverId: form.driverId ? Number(form.driverId) : null,
+      deliveredAt: form.deliveredAt || new Date().toISOString(),
+    };
+
+    if (editingId) {
+      await api.put(`/orders/${editingId}`, payload);
+    } else {
+      await api.post("/orders", payload);
+    }
+
+    setForm({
+      orderId: "",
+      valueRs: 0,
+      deliveryTimeMinutes: 30,
+      deliveredAt: "",
+      routeId: "",
+      driverId: "",
     });
-    setOrderId("");
-    setValueRs(0);
-    setDeliveryTime(30);
-    setRouteId(null);
-    setDriverId(null);
-    fetchData();
+    setEditingId(null);
+    fetchAll();
   };
 
-  const removeOrder = async (id: number) => {
-    if (!confirm("Delete order?")) return;
-    await api.delete(`/orders/${id}`);
-    fetchData();
+  const handleEdit = (order: Order) => {
+    setEditingId(order.id);
+    setForm({
+      orderId: order.orderId,
+      valueRs: order.valueRs,
+      deliveryTimeMinutes: order.deliveryTimeMinutes,
+      deliveredAt: order.deliveredAt,
+      routeId: order.routeId?.toString() || "",
+      driverId: order.driverId?.toString() || "",
+    });
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setForm({
+      orderId: "",
+      valueRs: 0,
+      deliveryTimeMinutes: 30,
+      deliveredAt: "",
+      routeId: "",
+      driverId: "",
+    });
+  };
+
+  const handleDelete = async (id: number) => {
+    if (window.confirm("Delete this order?")) {
+      await api.delete(`/orders/${id}`);
+      fetchAll();
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Navbar />
-      <div className="max-w-5xl mx-auto p-6">
-        <h1 className="text-2xl mb-4">Orders</h1>
+    <div className="max-w-7xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Orders Management</h1>
 
-        {/* Create Form */}
-        <div className="bg-white p-4 rounded shadow mb-6">
-          <div className="grid grid-cols-1 sm:grid-cols-6 gap-3">
-            <input
-              value={orderId}
-              onChange={(e) => setOrderId(e.target.value)}
-              placeholder="Order ID"
-              className="p-2 border rounded"
-            />
-            <input
-              type="number"
-              value={valueRs}
-              onChange={(e) => setValueRs(Number(e.target.value))}
-              placeholder="Value (Rs)"
-              className="p-2 border rounded"
-            />
-            <input
-              type="number"
-              value={deliveryTime}
-              onChange={(e) => setDeliveryTime(Number(e.target.value))}
-              placeholder="Delivery Time (min)"
-              className="p-2 border rounded"
-            />
-            <select
-              value={routeId ?? ""}
-              onChange={(e) => setRouteId(e.target.value ? Number(e.target.value) : null)}
-              className="p-2 border rounded"
-            >
-              <option value="">Select Route</option>
-              {routes.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.routeId}
-                </option>
-              ))}
-            </select>
-            <select
-              value={driverId ?? ""}
-              onChange={(e) => setDriverId(e.target.value ? Number(e.target.value) : null)}
-              className="p-2 border rounded"
-            >
-              <option value="">Select Driver</option>
-              {drivers.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
-            <button onClick={createOrder} className="bg-black text-white px-4 rounded">
-              Add
-            </button>
-          </div>
-        </div>
+      {/* Form */}
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-4 rounded shadow mb-6 grid grid-cols-1 sm:grid-cols-6 gap-3"
+      >
+        <input
+          type="text"
+          placeholder="Order ID"
+          className="border p-2 rounded"
+          value={form.orderId}
+          onChange={(e) => setForm({ ...form, orderId: e.target.value })}
+          required
+        />
+        <input
+          type="number"
+          placeholder="Value (Rs)"
+          className="border p-2 rounded"
+          value={form.valueRs}
+          onChange={(e) =>
+            setForm({ ...form, valueRs: Number(e.target.value) })
+          }
+          required
+        />
+        <input
+          type="number"
+          placeholder="Delivery Time (min)"
+          className="border p-2 rounded"
+          value={form.deliveryTimeMinutes}
+          onChange={(e) =>
+            setForm({ ...form, deliveryTimeMinutes: Number(e.target.value) })
+          }
+          required
+        />
+        <select
+          className="border p-2 rounded"
+          value={form.routeId}
+          onChange={(e) => setForm({ ...form, routeId: e.target.value })}
+        >
+          <option value="">Select Route</option>
+          {routes.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.routeId}
+            </option>
+          ))}
+        </select>
+        <select
+          className="border p-2 rounded"
+          value={form.driverId}
+          onChange={(e) => setForm({ ...form, driverId: e.target.value })}
+        >
+          <option value="">Select Driver</option>
+          {drivers.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.name}
+            </option>
+          ))}
+        </select>
+        <button
+          type="submit"
+          className="bg-blue-600 text-white rounded px-4 py-2 hover:bg-blue-700"
+        >
+          {editingId ? "Update" : "Add"}
+        </button>
+        {editingId && (
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="bg-gray-400 text-white rounded px-4 py-2 hover:bg-gray-500"
+          >
+            Cancel
+          </button>
+        )}
+      </form>
 
-        {/* Orders Table */}
-        <div className="bg-white p-4 rounded shadow">
-          <table className="w-full text-left">
-            <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>Value</th>
-                <th>Time (min)</th>
-                <th>Route</th>
-                <th>Driver</th>
-                <th>Actions</th>
+      {/* Table */}
+      <div className="bg-white rounded shadow overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="p-2 border">ID</th>
+              <th className="p-2 border">Order ID</th>
+              <th className="p-2 border">Value (Rs)</th>
+              <th className="p-2 border">Time (min)</th>
+              <th className="p-2 border">Route</th>
+              <th className="p-2 border">Driver</th>
+              <th className="p-2 border">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map((o) => (
+              <tr key={o.id}>
+                <td className="p-2 border">{o.id}</td>
+                <td className="p-2 border">{o.orderId}</td>
+                <td className="p-2 border">{o.valueRs}</td>
+                <td className="p-2 border">{o.deliveryTimeMinutes}</td>
+                <td className="p-2 border">{o.routeId}</td>
+                <td className="p-2 border">{o.driverId}</td>
+                <td className="p-2 border space-x-2">
+                  <button
+                    onClick={() => handleEdit(o)}
+                    className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(o.id)}
+                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {orders.map((o) => (
-                <tr key={o.id} className="border-t">
-                  <td className="py-2">{o.orderId}</td>
-                  <td>{o.valueRs}</td>
-                  <td>{o.deliveryTimeMinutes}</td>
-                  <td>{o.route?.routeId ?? o.routeId}</td>
-                  <td>{o.driver?.name ?? o.driverId}</td>
-                  <td>
-                    <button
-                      className="text-red-600"
-                      onClick={() => removeOrder(o.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
+            ))}
+            {orders.length === 0 && (
+              <tr>
+                <td colSpan={7} className="p-4 text-center text-gray-500">
+                  No orders found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
