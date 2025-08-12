@@ -28,11 +28,7 @@ export async function login(username: string, password: string) {
   }
 }
 
-export async function registerUser(username: string, password: string) {
-  const res = await api.post("/auth/register", { username, password });
-  saveToken(res.data.token);
-  return res.data;
-}
+
 
 /**
  * Check if user is authenticated

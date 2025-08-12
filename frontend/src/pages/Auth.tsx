@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
-import { login, registerUser, getToken } from "../services/auth";
+import { login, getToken } from "../services/auth";
 import { useNavigate } from "react-router-dom";
 
-export default function Auth() {
-  const [isLogin, setIsLogin] = useState(true);
+export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -17,24 +16,17 @@ export default function Auth() {
 
   const handleSubmit = async () => {
     try {
-      if (isLogin) {
-        await login(username, password);
-      } else {
-        await registerUser(username, password);
-        await login(username, password); // auto-login after register
-      }
+      await login(username, password);
       navigate("/dashboard", { replace: true });
     } catch {
-      alert(isLogin ? "Invalid credentials" : "Registration failed");
+      alert("Invalid credentials");
     }
   };
 
   return (
     <div className="h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-6 rounded shadow w-80 space-y-4">
-        <h1 className="text-xl font-bold text-center">
-          {isLogin ? "Manager Login" : "Register Account"}
-        </h1>
+        <h1 className="text-xl font-bold text-center">Manager Login</h1>
         <input
           type="text"
           placeholder="Username"
@@ -53,17 +45,8 @@ export default function Auth() {
           onClick={handleSubmit}
           className="bg-blue-500 text-white w-full py-2 rounded"
         >
-          {isLogin ? "Login" : "Register"}
+          Login
         </button>
-
-        <p
-          className="text-sm text-center text-blue-500 cursor-pointer hover:underline"
-          onClick={() => setIsLogin(!isLogin)}
-        >
-          {isLogin
-            ? "Don't have an account? Register"
-            : "Already have an account? Login"}
-        </p>
       </div>
     </div>
   );
