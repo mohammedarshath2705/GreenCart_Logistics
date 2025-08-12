@@ -47,7 +47,7 @@ GreenCart Logistics Delivery Simulation & KPI Dashboard is an internal full-stac
 
 1. **Clone the repository**
     ```
-    git clone https://github.com/your-username/green-cart-logistics.git
+    git clone https://github.com/mohammedarshath2705/GreenCart_Logistics.git
     cd green-cart-logistics/backend
     ```
 
@@ -72,12 +72,12 @@ GreenCart Logistics Delivery Simulation & KPI Dashboard is an internal full-stac
 
 6. *(Optional)* **Seed initial data**
     ```
-    npm run seed
+    node src/seed.js
     ```
 
 7. **Start backend server**
     ```
-    npm run dev
+    npx nodemon src/app.js
     ```
     Backend runs at `http://localhost:5000` (or port from `.env`).
 
@@ -139,78 +139,10 @@ PORT=5000
 
 ---
 
+# API Documentation
+
 ## API Documentation
 
-### Authentication
-
-- **POST /api/auth/login**
-    - `Request:`  
-      ```
-      { "username": "manager", "password": "pass123" }
-      ```
-    - `Response:`
-      ```
-      { "token": "JWT_TOKEN" }
-      ```
-
-### Drivers
-
-- **GET /api/drivers**
-    - Returns all drivers.
-    - `Response:`  
-      ```
-      [ { "id": 1, "name": "Alice", "status": "active" }, ... ]
-      ```
-
-- **POST /api/drivers**
-    - Creates new driver.
-    - `Request:`  
-      ```
-      { "name": "Bob", "routeId": 3 }
-      ```
-
-### Routes
-
-- **GET /api/routes**
-    - Get all routes.
-    - `Response:`  
-      ```
-      [ { "id": 1, "origin": "Depot", "destination": "Uptown" }, ... ]
-      ```
-
-### Orders
-
-- **GET /api/orders**
-    - List all orders.
-    - `Response:`  
-      ```
-      [ { "id": 10, "address": "123 Main St", "status": "delivered" }, ... ]
-      ```
-
-### Simulation
-
-- **POST /api/simulate**
-    - Run delivery simulation.
-    - `Request:`  
-      ```
-      { "drivers": 5, "startTime": "08:00", "maxHours": 8 }
-      ```
-    - `Response:`
-      ```
-      {
-        "totalProfit": 2500,
-        "efficiencyScore": 94,
-        "onTimeDeliveries": 47,
-        "lateDeliveries": 3,
-        "fuelCostBreakdown": { "totalFuel": 35, "ecoSavings": 9 }
-      }
-      ```
-
-### KPIs
-
-- **GET /api/kpis**
-    - Returns current KPIs/statistics from latest simulation.
-
----
-
+You can explore and test the GreenCart Logistics API here:  
+[**View API Documentation in Postman**](https://www.postman.com/blue-capsule-303088/myworkspace/collection/pe9pcfy/greencart-logistics-api)
 
