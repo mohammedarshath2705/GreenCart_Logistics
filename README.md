@@ -141,8 +141,14 @@ PORT=5000
 
 # API Documentation
 
-## API Documentation
 
 You can explore and test the GreenCart Logistics API here:  
 [**View API Documentation in Postman**](https://www.postman.com/blue-capsule-303088/myworkspace/collection/pe9pcfy/greencart-logistics-api)
 
+
+----
+
+## Manager Login
+
+- username : admin
+- password : secret123
