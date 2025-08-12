@@ -5,9 +5,10 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTc1NDk3OTYwNiwiZXhwIjoxNzU1MDY2MDA2fQ.PBAuLZJBUDWlkO4-GKn5Hj0Ww1jjuF7Ys9UaWEl1hXg";
-  config.headers.Authorization = `Bearer ${token}`;
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 
