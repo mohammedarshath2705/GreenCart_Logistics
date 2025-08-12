@@ -198,3 +198,31 @@ exports.runSimulation = async (req, res) => {
     return res.status(500).json({ error: 'Simulation failed', details: err.message });
   }
 };
+
+// src/controllers/simulation.controller.js
+
+exports.getLatestSimulation = async (req, res) => {
+  try {
+    const latest = await prisma.simulationHistory.findFirst({
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!latest) {
+      return res.status(404).json({ error: "No simulation history found" });
+    }
+
+    return res.json({
+      totalProfit: latest.totalProfit,
+      efficiencyScore: latest.efficiencyScore,
+      onTimeCount: latest.onTimeCount,
+      lateCount: latest.lateCount,
+      fuelBreakdown: {
+        highTraffic: latest.fuelCostHigh,
+        lowTraffic: latest.fuelCostLow,
+      },
+    });
+  } catch (err) {
+    console.error("Error fetching latest simulation:", err);
+    return res.status(500).json({ error: "Failed to fetch latest simulation" });
+  }
+};
